@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES2022", /*Javascript version to compile*/
+    "module": "commonjs", /*Definisce moduli da usare in output, genera sintassi import export*/
+    "moduleResolution": "node", /*Come typescript trova i file dei moduli*/
+    "outDir": "./dist", /*Cartella di output del compilato*/
+    "rootDir": "./src", /*Definisce cartella sorgente del progetto*/
+    "strict": true, /*abilita verifiche rigorose*/
+    "esModuleInterop": true, /*miglira compatibilita con CommonJS*/
+    "skipLibCheck": true, /*Salta la verifica dei tipi nei file di dichiarazione*/
+    "forceConsistentCasingInFileNames": true, /*Forza la coerenza tra maiuscole/minuscole nei percorsi file e import*/
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true 
+},
+  "include": [ "src/lib/**/*","src/server/**/*"], /*indica quali file includere nella compilazione*/
+  "exclude": ["node_modules", "src/public"] /*quali file escludere dalla compilazione*/
+}
