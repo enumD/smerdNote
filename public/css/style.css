@@ -13,4 +13,5 @@ body {
 #app {
     max-width: 800px;
     margin: 0 auto;
+    background-color: blueviolet;
 }

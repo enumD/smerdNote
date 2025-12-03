@@ -8,6 +8,8 @@ import { pipeline } from 'stream/promises'
 import { getSystemErrorMap } from 'util';
 import { log } from 'console';
 import { url } from 'inspector';
+import Stream from 'stream';
+import { access } from 'fs/promises';
 
 // Get the directory name based on where it's running:
 // Local: src
@@ -27,6 +29,27 @@ const MIME_TYPES: Record<string, string> = {
     '.ico': 'image/x-icon'
 };
 
+process.on('uncaughtException', (error) =>
+{
+    console.error('❌ UNCAUGHT EXCEPTION:', error);
+    console.error('Stack:', error.stack);
+});
+
+process.on('unhandledRejection', (reason, promise) =>
+{
+    console.error('❌ UNHANDLED REJECTION at:', promise, 'reason:', reason);
+});
+
+process.on('beforeExit', (code) =>
+{
+    console.log('❌ Process beforeExit with code:', code);
+});
+
+process.on('exit', (code) =>
+{
+    console.log('❌ Process exit with code:', code);
+});
+
 
 let count = 0;
 
@@ -36,10 +59,6 @@ const server = createServer(async (req: IncomingMessage, res: ServerResponse) =>
     {
         // If url is "/" return "index.html" else do nothing
         const urlPath = req.url === "/" ? "/index.html" : req.url;
-
-        // const reqMethod = req.method ? req.method : "No method";
-        // const rawHeader = req.headers;
-        // const accept = req.headers.accept
 
         if (!urlPath || urlPath.length < 4)
         {
@@ -66,30 +85,26 @@ const server = createServer(async (req: IncomingMessage, res: ServerResponse) =>
             return;
         }
 
-        // non serve, se sta
-        // if (!fs.existsSync(filePath.path))
-        // {
-        //     console.log("file requested not found");
-        //     res.writeHead(404);
-        //     res.end(`File not found: ${filePath}`)
-        //     return;
-        // }
-
-        // const stats = await fs.promises.stat(filePath.path);
-
-        // if (!stats.isFile())
-        // {
-        //     console.log("Not a file")
-        //     res.writeHead(403);
-        //     res.end("not a file")
-        //     return;
-        // }
-
-
-
+        // Check file exists
+        await access(filePath.path, fs.constants.R_OK);
 
         // serve file as a stream
         const stream = fs.createReadStream(filePath.path)
+        const streamReady = new Promise<void>((resolve, reject) =>
+        {
+            stream.on('open', () =>
+            {
+                resolve(); // Stream aperto con successo
+            });
+
+            stream.on('error', (error) =>
+            {
+                reject(error); // Stream fallito
+            });
+        });
+
+        // wait for stream to be ready
+        await streamReady;
 
         const headers = await writeHeaders(filePath.path)
 
@@ -101,42 +116,6 @@ const server = createServer(async (req: IncomingMessage, res: ServerResponse) =>
         console.log("Retriving", filePath.path);
 
 
-
-        // // Check if it's a directory
-        // const stats = await stat(filePath).catch(() => null);
-
-        // if (stats?.isDirectory())
-        // {0
-        //     // Serve index.html for directories
-        //     const indexPath = join(filePath, 'index.html');
-        //     console.log(`📁 Is directory, trying: ${indexPath}`);
-
-        //     const indexContent = await readFile(indexPath);
-        //     const ext = extname(indexPath);
-        //     const contentType = MIME_TYPES[ ext ] || 'application/octet-stream';
-
-        //     res.writeHead(200, {
-        //         'Content-Type': contentType,
-        //         'Cache-Control': 'no-cache'
-        //     });
-        //     res.end(indexContent);
-        //     return;
-        // }
-
-        // // Serve file
-        // const content = await readFile(filePath);
-        // const ext = extname(filePath);
-        // const contentType = MIME_TYPES[ ext ] || 'application/octet-stream';
-
-
-        // res.writeHead(200, {
-        //     'Content-Type': contentType,
-        //     'Cache-Control': 'no-cache'
-        // });
-        // res.end(content);
-
-        // res.end();
-
     } catch (error: unknown)
     {
         const error_str = formatError(error)
@@ -146,6 +125,7 @@ const server = createServer(async (req: IncomingMessage, res: ServerResponse) =>
         {
             res.writeHead(555);
         }
+
         res.end(`Generic error mf`);
     }
 });

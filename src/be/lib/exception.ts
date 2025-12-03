@@ -24,34 +24,41 @@ function isNodeSystemError(error: unknown): error is NodeSystemError
  */
 export function formatError(error: unknown): string
 {
-    // Caso 1: È un errore di sistema Node (ha la proprietà 'code')
-    if (isNodeSystemError(error))
+    try
     {
-        // Ritorna il codice se presente, altrimenti il messaggio
-        return error.code
-            ? `System Error: ${error.code} - ${error.message}`
-            : `Error: ${error.message}`;
-    }
-
-    // Caso 2: È un oggetto Error standard (ma non ha la proprietà 'code')
-    if (error instanceof Error)
-    {
-        return `Error: ${error.message}`;
-    }
-
-    // Caso 3: Non è né un oggetto Error, né ha un codice (è una stringa, numero, ecc.)
-    // Utilizza JSON.stringify per una rappresentazione più robusta degli oggetti sconosciuti
-    if (typeof error === 'object' && error !== null)
-    {
-        try
+        // Caso 1: È un errore di sistema Node (ha la proprietà 'code')
+        if (isNodeSystemError(error))
         {
-            return `Unknown Object Error: ${JSON.stringify(error)}`;
-        } catch
-        {
-            return `Unknown Object Error: (Cannot be serialized)`;
+            // Ritorna il codice se presente, altrimenti il messaggio
+            return error.code
+                ? `System Error: ${error.code} - ${error.message}`
+                : `Error: ${error.message}`;
         }
+
+        // Caso 2: È un oggetto Error standard (ma non ha la proprietà 'code')
+        if (error instanceof Error)
+        {
+            return `Error: ${error.message}`;
+        }
+
+        // Caso 3: Non è né un oggetto Error, né ha un codice (è una stringa, numero, ecc.)
+        // Utilizza JSON.stringify per una rappresentazione più robusta degli oggetti sconosciuti
+        if (typeof error === 'object' && error !== null)
+        {
+            try
+            {
+                return `Unknown Object Error: ${JSON.stringify(error)}`;
+            } catch
+            {
+                return `Unknown Object Error: (Cannot be serialized)`;
+            }
+        }
+
+        // Caso 4: È un tipo primitivo (stringa, numero, boolean)
+        return `Unknown Primitive Error`;
+    } catch (error)
+    {
+        return "exceptionooo"
     }
 
-    // Caso 4: È un tipo primitivo (stringa, numero, boolean)
-    return `Unknown Primitive Error: ${String(error)}`;
 }
