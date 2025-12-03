@@ -17,6 +17,8 @@ out/
 # Editor e IDE
 .vscode/
 
+# log files
+log_files/
 
 # Environment variables
 .env

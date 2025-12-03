@@ -97,10 +97,8 @@ const server = createServer(async (req: IncomingMessage, res: ServerResponse) =>
 
         await pipeline(stream, res)
 
-        console.log("------------------------");
-        console.log("Url: ", urlPath);
-        console.log("Absolute file:", filePath.path)
-
+        console.log("Wanting", req.url);
+        console.log("Retriving", filePath.path);
 
 
 

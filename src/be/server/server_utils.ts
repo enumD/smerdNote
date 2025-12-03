@@ -7,10 +7,8 @@ dotenv.config()
 const EXEC_DIR = process.cwd()
 
 
-const SRC_DIR = EXEC_DIR + process.env.URL_SRC
-
 // public directory
-const PUBLIC_DIR = path.join(SRC_DIR, 'public')
+const PUBLIC_DIR = path.join(EXEC_DIR, 'public')
 
 
 /**
@@ -34,7 +32,6 @@ export function getSafePath(reqPath: string)
     // Compose the path by adding before the exec dir
     const resolvPath = path.resolve(EXEC_DIR, normalizedPath)
 
-    console.log(resolvPath)
 
     // Check that resolve is inside the public path
     if (!resolvPath.startsWith(EXEC_DIR))

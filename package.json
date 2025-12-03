@@ -6,10 +6,9 @@
   "description": "project from scratch to learn basic",
   "main": "dist/server/server.ts",
   "scripts": {
-    "build": " npm run build:server && npm run build:client && npm run copy:static_file",
+    "build": " npm run build:server && npm run build:client ",
     "build:server": "tsc -p tsconfig.json",
     "build:client": "tsc -p tsconfig.client.json",
-    "copy:static_file": "cp -r src/public/*.html src/public/css dist/public/ ",
     "clean": "rm -rf dist",
     "start": "node dist/server/server.js",
     "dev": "nodemon --exec ts-node src/server/server.ts",

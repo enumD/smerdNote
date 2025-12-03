@@ -3,13 +3,13 @@
     "target": "ES2022",
     "module": "ES2022",
     "lib": ["ES2022", "DOM"],
-    "outDir": "./dist/public/fe",
-    "rootDir": "./src/public/fe",
+    "outDir": "./public/script",
+    "rootDir": "./src/fe",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true
   },
-  "include": ["src/public/fe/**/*.ts"],
-  "exclude": ["node_modules", "src/server"]
+  "include": ["src/fe/**/*.ts"],
+  "exclude": ["node_modules", "src/be"]
 }
