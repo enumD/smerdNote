@@ -10,7 +10,6 @@ pnpm-debug.log*
 dist/
 out/
 *.js
-!src/public/js/*.js  # Mantieni i JS compilati per il client
 *.js.map
 *.d.ts
 
