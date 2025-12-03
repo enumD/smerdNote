@@ -4,4 +4,5 @@ console.log('Client TypeScript loaded');
 document.addEventListener('DOMContentLoaded', () =>
 {
     console.log('DOM fully loaded');
+    debugger
 });

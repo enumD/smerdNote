@@ -1,9 +1,13 @@
 import { createServer, IncomingMessage, ServerResponse } from 'http';
 import { formatError } from '../lib/exception';
 import { getSafePath } from './server_utils';
-import fs from 'fs';
+import { logga, LogLevel } from "../log/logModule"
+import fs, { write } from 'fs';
 import path from 'path';
 import { pipeline } from 'stream/promises'
+import { getSystemErrorMap } from 'util';
+import { log } from 'console';
+import { url } from 'inspector';
 
 // Get the directory name based on where it's running:
 // Local: src
@@ -31,13 +35,13 @@ const server = createServer(async (req: IncomingMessage, res: ServerResponse) =>
     try
     {
         // If url is "/" return "index.html" else do nothing
-        const urlPath = req.url === "/" ? "index.html" : req.url;
+        const urlPath = req.url === "/" ? "/index.html" : req.url;
 
         // const reqMethod = req.method ? req.method : "No method";
         // const rawHeader = req.headers;
         // const accept = req.headers.accept
 
-        if (!urlPath)
+        if (!urlPath || urlPath.length < 4)
         {
             console.log("Bad Request, url path not found")
             res.writeHead(400);
@@ -64,52 +68,26 @@ const server = createServer(async (req: IncomingMessage, res: ServerResponse) =>
         //     return;
         // }
 
-        const stats = await fs.promises.stat(filePath.path);
+        // const stats = await fs.promises.stat(filePath.path);
 
-        if (!stats.isFile())
-        {
-            console.log("Not a file")
-            res.writeHead(403);
-            res.end("not a file")
-            return;
-        }
+        // if (!stats.isFile())
+        // {
+        //     console.log("Not a file")
+        //     res.writeHead(403);
+        //     res.end("not a file")
+        //     return;
+        // }
 
-        const fileExtension = path.extname(filePath.path).toLowerCase()
-        const contentType = MIME_TYPES[ fileExtension ];
 
-        if (!contentType)
-        {
-            console.log("file not supported")
-            res.writeHead(405)
-            res.end("file not supported")
-            return;
-        }
 
         // serve file as a stream
         const stream = fs.createReadStream(filePath.path)
 
-        stream.on('error', (error: NodeJS.ErrnoException) =>
-        {
-            if (error.code === 'ENOENT')
-            {
-                res.writeHead(404);
-                res.end("file not found")
-            }
-            else
-            {
-                console.log("Stream error:", error)
-                res.writeHead(500)
-                res.end(`Internal server error: ${error}`)
-            }
-        });
+        const headers = await writeHeaders(filePath.path)
 
-        stream.on('open', () =>
-        {
-            res.writeHead(200, { 'content-type': contentType })
-            stream.pipe(res)
-        });
+        res.writeHead(200, headers)
 
-
+        await pipeline(stream, res)
 
         console.log("------------------------");
         console.log("Url: ", urlPath);
@@ -156,8 +134,13 @@ const server = createServer(async (req: IncomingMessage, res: ServerResponse) =>
     } catch (error: unknown)
     {
         const error_str = formatError(error)
-        res.writeHead(555);
-        res.end(`Generic error: ${error_str}`);
+        console.log(error_str)
+        await logga(LogLevel.ERROR, error_str)
+        if (!res.headersSent)
+        {
+            res.writeHead(555);
+        }
+        res.end(`Generic error mf`);
     }
 });
 
@@ -171,3 +154,30 @@ server.listen(PORT, () =>
 
 
 
+
+
+async function writeHeaders(filePath: string)
+{
+    const fileExtension = path.extname(filePath).toLowerCase()
+    const contentType = MIME_TYPES[ fileExtension ];
+
+    if (!contentType)
+    {
+        throw new Error("writeHeader() - file not supported")
+    }
+
+    const headers: Record<string, string> = { 'content-type': contentType };
+
+    if (process.env.ENV_NAME === 'production')
+    {
+        headers[ 'cache-control' ] = 'public'
+    }
+    else
+    {
+        headers[ 'cache-control' ] = 'no-cache, no-store, must-revalidate'
+        headers[ 'pragma' ] = 'no-cache';
+        headers[ 'expires' ] = '0';
+    }
+
+    return headers;
+}

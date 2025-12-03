@@ -26,8 +26,10 @@ export function getSafePath(reqPath: string)
     // remove %20 %40 etc
     const decodedPath = decodeURIComponent(reqPath);
 
+    const cleanPath = decodedPath.startsWith('/') ? decodedPath.substring(1) : decodedPath;
+
     // Normalize path
-    const normalizedPath = path.normalize(decodedPath)
+    const normalizedPath = path.normalize(cleanPath)
 
     // Compose the path by adding before the exec dir
     const resolvPath = path.resolve(EXEC_DIR, normalizedPath)
