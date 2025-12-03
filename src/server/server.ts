@@ -1,10 +1,14 @@
 import { createServer, IncomingMessage, ServerResponse } from 'http';
-import { readFile, stat } from 'fs/promises';
-import { join, extname } from 'path';
 import { formatError } from '../lib/exception';
+import { getSafePath } from './server_utils';
+import fs from 'fs';
+import path from 'path';
+import { pipeline } from 'stream/promises'
 
-// __dirname funziona direttamente in CommonJS
-const PUBLIC_DIR = join(__dirname, '../public');
+// Get the directory name based on where it's running:
+// Local: src
+// Develop : dist
+
 
 const MIME_TYPES: Record<string, string> = {
     '.html': 'text/html',
@@ -19,74 +23,137 @@ const MIME_TYPES: Record<string, string> = {
     '.ico': 'image/x-icon'
 };
 
+
+let count = 0;
+
 const server = createServer(async (req: IncomingMessage, res: ServerResponse) =>
 {
     try
     {
-        const urlPath = req.url === '/' ? '/index.html' : req.url;
+        // If url is "/" return "index.html" else do nothing
+        const urlPath = req.url === "/" ? "index.html" : req.url;
 
-        console.log(`📁 Requested path: ${urlPath}`);
-        console.log(`📁 PUBLIC_DIR: ${PUBLIC_DIR}`);
+        // const reqMethod = req.method ? req.method : "No method";
+        // const rawHeader = req.headers;
+        // const accept = req.headers.accept
 
         if (!urlPath)
         {
+            console.log("Bad Request, url path not found")
             res.writeHead(400);
-            res.end('Bad Request');
+            res.end('Bad Request, path not found');
             return;
         }
 
+        const filePath = getSafePath(urlPath);
 
-
-        const sanitizedPath = urlPath.replace(/\.\.\//g, '');
-        const filePath = join(PUBLIC_DIR, sanitizedPath);
-        console.log(`📁 Resolved path: ${filePath}`);
-
-        // Security check
-        const normalizedFilePath = join(filePath);
-        const normalizedPublicDir = join(PUBLIC_DIR);
-
-        if (!normalizedFilePath.startsWith(normalizedPublicDir))
+        if (!filePath.success)
         {
-            res.writeHead(403, { 'Content-Type': 'text/plain' });
-            res.end('Access Forbidden');
+            console.log(filePath.error);
+            res.writeHead(filePath.status)
+            res.end(filePath.error)
             return;
         }
 
-        // Check if it's a directory
-        const stats = await stat(filePath).catch(() => null);
+        // non serve, se sta
+        // if (!fs.existsSync(filePath.path))
+        // {
+        //     console.log("file requested not found");
+        //     res.writeHead(404);
+        //     res.end(`File not found: ${filePath}`)
+        //     return;
+        // }
 
-        if (stats?.isDirectory())
+        const stats = await fs.promises.stat(filePath.path);
+
+        if (!stats.isFile())
         {
-            // Serve index.html for directories
-            const indexPath = join(filePath, 'index.html');
-            console.log(`📁 Is directory, trying: ${indexPath}`);
-
-            const indexContent = await readFile(indexPath);
-            const ext = extname(indexPath);
-            const contentType = MIME_TYPES[ ext ] || 'application/octet-stream';
-
-            res.writeHead(200, {
-                'Content-Type': contentType,
-                'Cache-Control': 'no-cache'
-            });
-            res.end(indexContent);
+            console.log("Not a file")
+            res.writeHead(403);
+            res.end("not a file")
             return;
         }
 
-        // Serve file
-        const content = await readFile(filePath);
-        const ext = extname(filePath);
-        const contentType = MIME_TYPES[ ext ] || 'application/octet-stream';
+        const fileExtension = path.extname(filePath.path).toLowerCase()
+        const contentType = MIME_TYPES[ fileExtension ];
 
-        console.log(`✅ Serving: ${filePath} as ${contentType}`);
+        if (!contentType)
+        {
+            console.log("file not supported")
+            res.writeHead(405)
+            res.end("file not supported")
+            return;
+        }
 
-        res.writeHead(200, {
-            'Content-Type': contentType,
-            'Cache-Control': 'no-cache'
+        // serve file as a stream
+        const stream = fs.createReadStream(filePath.path)
+
+        stream.on('error', (error: NodeJS.ErrnoException) =>
+        {
+            if (error.code === 'ENOENT')
+            {
+                res.writeHead(404);
+                res.end("file not found")
+            }
+            else
+            {
+                console.log("Stream error:", error)
+                res.writeHead(500)
+                res.end(`Internal server error: ${error}`)
+            }
         });
-        res.end(content);
 
-    } catch (error: any)
+        stream.on('open', () =>
+        {
+            res.writeHead(200, { 'content-type': contentType })
+            stream.pipe(res)
+        });
+
+
+
+        console.log("------------------------");
+        console.log("Url: ", urlPath);
+        console.log("Absolute file:", filePath.path)
+
+
+
+
+        // // Check if it's a directory
+        // const stats = await stat(filePath).catch(() => null);
+
+        // if (stats?.isDirectory())
+        // {0
+        //     // Serve index.html for directories
+        //     const indexPath = join(filePath, 'index.html');
+        //     console.log(`📁 Is directory, trying: ${indexPath}`);
+
+        //     const indexContent = await readFile(indexPath);
+        //     const ext = extname(indexPath);
+        //     const contentType = MIME_TYPES[ ext ] || 'application/octet-stream';
+
+        //     res.writeHead(200, {
+        //         'Content-Type': contentType,
+        //         'Cache-Control': 'no-cache'
+        //     });
+        //     res.end(indexContent);
+        //     return;
+        // }
+
+        // // Serve file
+        // const content = await readFile(filePath);
+        // const ext = extname(filePath);
+        // const contentType = MIME_TYPES[ ext ] || 'application/octet-stream';
+
+
+        // res.writeHead(200, {
+        //     'Content-Type': contentType,
+        //     'Cache-Control': 'no-cache'
+        // });
+        // res.end(content);
+
+        // res.end();
+
+    } catch (error: unknown)
     {
         const error_str = formatError(error)
         res.writeHead(555);
@@ -99,3 +166,8 @@ server.listen(PORT, () =>
 {
     console.log(`Server running at http://localhost:3000`);
 });
+
+
+
+
+

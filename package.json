@@ -1,15 +1,19 @@
 {
+  "author": "D.Taddei",
+  "license": "MIT",
   "name": "smerdnote",
   "version": "1.0.0",
   "description": "project from scratch to learn basic",
   "main": "dist/server/server.ts",
   "scripts": {
-    "build":" npm run build:server && npm run build:client",
-    "build:server":"tsc -p tsconfig.json",
-    "build:client":"tsc -p tsconfig.client.json",
-    "start":"node dist/server/server.js",
-    "dev": "nodemon src/server/server.ts", 
-    "watch:client":"tsc -p tsconfig.client.json --watch"
+    "build": " npm run build:server && npm run build:client && npm run copy:static_file",
+    "build:server": "tsc -p tsconfig.json",
+    "build:client": "tsc -p tsconfig.client.json",
+    "copy:static_file": "cp -r src/public/*.html src/public/css dist/public/ ",
+    "clean": "rm -rf dist",
+    "start": "node dist/server/server.js",
+    "dev": "nodemon src/server/server.ts",
+    "watch:client": "tsc -p tsconfig.client.json --watch"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
@@ -17,6 +21,7 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   },
-  "author": "D.Taddei",
-  "license": "MIT"
+  "dependencies": {
+    "dotenv": "^17.2.3" 
+  }
 }

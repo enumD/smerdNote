@@ -1,0 +1,41 @@
+
+// HTTP Status Codes Reference
+
+// SUCCESS (2xx)
+200: "OK - Richiesta elaborata con successo",
+201: "Created - Risorsa creata con successo (dopo POST)",
+202: "Accepted - Richiesta accettata ma elaborazione non completata", 
+204: "No Content - Successo ma senza contenuto nel response",
+
+// MY ERRORS
+
+300 : trying trasversal directory 
+
+// CLIENT ERRORS (4xx)  
+400: "Bad Request - Richiesta malformata o sintassi non valida",
+401: "Unauthorized - Autenticazione richiesta o fallita",
+403: "Forbidden - Accesso negato (autorizzazione insufficiente)",
+404: "Not Found - Risorsa non trovata",
+405: "Method Not Allowed - Metodo HTTP non permesso",
+409: "Conflict - Conflitto con stato attuale (es. risorsa già esistente)",
+422: "Unprocessable Entity - Dati della richiesta non validi",
+429: "Too Many Requests - Troppe richieste in breve tempo",
+
+// SERVER ERRORS (5xx)
+500: "Internal Server Error - Errore generico del server",
+502: "Bad Gateway - Server gateway/proxy ha ricevuto risposta non valida",
+503: "Service Unavailable - Servizio temporaneamente non disponibile",
+504: "Gateway Timeout - Server gateway/proxy timeout"
+
+
+GITHUB
+git pull --all
+git merge develop --squash
+
+git remote update origin --prune
+
+git fetch -p per aggiornare la lista dei remote
+
+git branch -vv per vedere quali branch sono "gone"
+
+git branch -d nome_branch per eliminarli singolarmente
