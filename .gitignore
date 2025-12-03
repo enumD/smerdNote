@@ -18,6 +18,7 @@ out/
 
 # log files
 log_files/
+log_files/*
 
 # Environment variables
 .env
