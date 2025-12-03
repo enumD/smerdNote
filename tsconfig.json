@@ -10,7 +10,9 @@
     "skipLibCheck": true, /*Salta la verifica dei tipi nei file di dichiarazione*/
     "forceConsistentCasingInFileNames": true, /*Forza la coerenza tra maiuscole/minuscole nei percorsi file e import*/
     "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true 
+    "allowSyntheticDefaultImports": true,
+    "sourceMap": true, /* Collega ts a js per debugger*/
+    "inlineSources": true
 },
   "include": [ "src/lib/**/*","src/server/**/*"], /*indica quali file includere nella compilazione*/
   "exclude": ["node_modules", "src/public"] /*quali file escludere dalla compilazione*/

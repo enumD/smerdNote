@@ -12,7 +12,7 @@
     "copy:static_file": "cp -r src/public/*.html src/public/css dist/public/ ",
     "clean": "rm -rf dist",
     "start": "node dist/server/server.js",
-    "dev": "nodemon src/server/server.ts",
+    "dev": "nodemon --exec ts-node src/server/server.ts",
     "watch:client": "tsc -p tsconfig.client.json --watch"
   },
   "devDependencies": {

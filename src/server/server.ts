@@ -49,6 +49,13 @@ const server = createServer(async (req: IncomingMessage, res: ServerResponse) =>
             return;
         }
 
+        if (urlPath.includes('dev'))
+        {
+            res.writeHead(404)
+            res.end("sfaccim")
+            return;
+        }
+
         const filePath = getSafePath(urlPath);
 
         if (!filePath.success)
@@ -77,6 +84,7 @@ const server = createServer(async (req: IncomingMessage, res: ServerResponse) =>
         //     res.end("not a file")
         //     return;
         // }
+
 
 
 
