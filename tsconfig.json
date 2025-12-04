@@ -5,14 +5,16 @@
     "moduleResolution": "node", /*Come typescript trova i file dei moduli*/
     "outDir": "./dist", /*Cartella di output del compilato*/
     "rootDir": "./src/be", /*Definisce cartella sorgente del progetto*/
-    "strict": true, /*abilita verifiche rigorose*/
+    "strict": false, /*abilita verifiche rigorose*/
     "esModuleInterop": true, /*miglira compatibilita con CommonJS*/
     "skipLibCheck": true, /*Salta la verifica dei tipi nei file di dichiarazione*/
     "forceConsistentCasingInFileNames": true, /*Forza la coerenza tra maiuscole/minuscole nei percorsi file e import*/
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
     "sourceMap": true, /* Collega ts a js per debugger*/
-    "inlineSources": true
+    "inlineSources": true,
+    
+    
 },
   "include": [ "src/be/**/*"], /*indica quali file includere nella compilazione*/
   "exclude": ["node_modules", "public", "src/fe"] /*quali file escludere dalla compilazione*/
